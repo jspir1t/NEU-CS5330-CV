@@ -187,12 +187,12 @@ int segment(cv::Mat &src, cv::Mat &dst, int component_num, std::map<int, cv::Mat
 }
 
 void mark_object(cv::Mat &segmented_img, std::vector<cv::Point> draw_vertices) {
-  cv::circle(segmented_img, draw_vertices[0], 2, cv::Scalar(0, 255, 255), 2);
-  cv::line(segmented_img, draw_vertices[1], draw_vertices[2], cv::Scalar(0, 255, 0), 2);
-  cv::line(segmented_img, draw_vertices[3], draw_vertices[4], cv::Scalar(0, 255, 0), 2);
-  cv::line(segmented_img, draw_vertices[4], draw_vertices[6], cv::Scalar(0, 255, 0), 2);
-  cv::line(segmented_img, draw_vertices[6], draw_vertices[5], cv::Scalar(0, 255, 0), 2);
-  cv::line(segmented_img, draw_vertices[5], draw_vertices[3], cv::Scalar(0, 255, 0), 2);
+  cv::circle(segmented_img, draw_vertices[0], 3, cv::Scalar(0, 255, 255), 1);
+  cv::line(segmented_img, draw_vertices[1], draw_vertices[2], cv::Scalar(0, 255, 0), 1);
+  cv::line(segmented_img, draw_vertices[3], draw_vertices[4], cv::Scalar(0, 255, 0), 1);
+  cv::line(segmented_img, draw_vertices[4], draw_vertices[6], cv::Scalar(0, 255, 0), 1);
+  cv::line(segmented_img, draw_vertices[6], draw_vertices[5], cv::Scalar(0, 255, 0), 1);
+  cv::line(segmented_img, draw_vertices[5], draw_vertices[3], cv::Scalar(0, 255, 0), 1);
 }
 
 int features(cv::Mat &src, std::vector<double> &feature_vector, std::vector<cv::Point> &draw_vertices) {
@@ -247,7 +247,7 @@ int features(cv::Mat &src, std::vector<double> &feature_vector, std::vector<cv::
 //  std::cout << "fill ration: " << moments.m00 / (height * width) << std::endl;
 
   // get second moment about the central axis feature
-  double beta = angle + CV_PI / 2;
+  double beta = angle + CV_PI / 2.;
   double summation = 0.;
   for (int i = 0; i < src.rows; i++) {
     for (int j = 0; j < src.cols; j++) {
@@ -260,6 +260,12 @@ int features(cv::Mat &src, std::vector<double> &feature_vector, std::vector<cv::
   }
   double mu_22_angle = summation / moments.m00;
   feature_vector.emplace_back(mu_22_angle);
+
+  double hu[7];
+  HuMoments(moments, hu);
+  feature_vector.emplace_back(hu[0]);
+  feature_vector.emplace_back(hu[1]);
+  feature_vector.emplace_back(hu[2]);
 
   // find the coordinates in the original coordinate system, then draw the bounding box
   std::vector<std::pair<double, double>> temp_vertices;
