@@ -61,36 +61,11 @@ int read_features(std::fstream &db_file, std::map<std::string, std::vector<std::
 double euclidean_distance(std::vector<double> f1, std::vector<double> f2, std::vector<double> mean, std::vector<double> standard_deviation) {
   double diff_square = 0.;
 
-//  std::cout << "f1: ";
-//  for (auto i: f1) {
-//    std::cout << i << ", ";
-//  }
-//  std::cout << std::endl;
-//
-//  std::cout << "f2: ";
-//  for (auto i: f2) {
-//    std::cout << i << ", ";
-//  }
-//  std::cout << std::endl;
-
-
   for (int i = 0; i < f1.size(); i++) {
     f1[i] = (f1[i] - mean[i]) / standard_deviation[i];
     f2[i] = (f2[i] - mean[i]) / standard_deviation[i];
     diff_square += (f1[i] - f2[i]) * (f1[i] - f2[i]);
   }
-//  std::cout << "f1: ";
-//  for (auto i: f1) {
-//    std::cout << i << ", ";
-//  }
-//  std::cout << std::endl;
-//
-//  std::cout << "f2: ";
-//  for (auto i: f2) {
-//    std::cout << i << ", ";
-//  }
-//  std::cout << std::endl;
-//  std::cout << "result: " << std::sqrt(diff_square) << std::endl;
   return std::sqrt(diff_square);
 }
 
@@ -138,28 +113,6 @@ std::string euclidean_classifier(std::fstream &db_file, std::vector<double> &tar
   std::vector<double> mean;
   std::vector<double> standard_deviation;
   preprocess(db_file, (int)(target_feature.size()), features, mean, standard_deviation, FEATURE_FILE_NAME);
-//  for (auto i: features) {
-//    std::cout << i.first << ": " << std::endl;
-//    for (auto j: i.second) {
-//      std::cout << "(";
-//      for (double k: j) {
-//        std::cout << k << ", ";
-//      }
-//      std::cout << "), ";
-//    }
-//    std::cout << std::endl;
-//  }
-//  std::cout << std::endl;
-//  std::cout << "mean" << std::endl;
-//  for (auto i: mean) {
-//    std::cout << i << ", " ;
-//  }
-//  std::cout << std::endl;
-//  std::cout << "dev" << std::endl;
-//  for (auto i: standard_deviation) {
-//    std::cout << i << ", " ;
-//  }
-//  std::cout << std::endl;
 
   double min_dist = 100000.;
   std::string min_label;
@@ -175,53 +128,41 @@ std::string euclidean_classifier(std::fstream &db_file, std::vector<double> &tar
   return min_label;
 }
 
-std::string knn_classifier(std::fstream &db_file, std::vector<double> &target_feature, int k) {
+int knn_classifier(std::fstream &db_file, std::vector<double> &target_feature, int k, std::string &nearest_label) {
   std::map<std::string, std::vector<std::vector<double>>> features;
   std::vector<double> mean;
   std::vector<double> standard_deviation;
   preprocess(db_file, (int)(target_feature.size()), features, mean, standard_deviation, FEATURE_FILE_NAME);
 
-  std::vector<std::pair<std::string, double>> distances;
-  for (std::pair<std::string, std::vector<std::vector<double>>> p: features) {
-    for (const std::vector<double>& single_feature: p.second) {
+  // for each label, calculate the three nearest neighbor
+  std::map<std::string, double> label_distances;
+  for (std::pair<std::string, std::vector<std::vector<double>>> same_label_features: features) {
+    if (same_label_features.second.size() < k) {
+      return -1;
+    }
+    std::vector<double> distances;
+    for (std::vector<double> single_feature: same_label_features.second) {
       double distance = euclidean_distance(single_feature, target_feature, mean, standard_deviation);
-      distances.emplace_back(p.first, distance);
+      distances.emplace_back(distance);
+    }
+    double sum_k_distance = 0.;
+    for (int i = 0; i < k; i++) {
+      sum_k_distance += distances[i];
+    }
+    label_distances.insert(std::make_pair(same_label_features.first, sum_k_distance));
+  }
+  double min_dist = 10000.;
+//  std::string min_label;
+  for (std::pair<std::string, double> p: label_distances) {
+    if (p.second < min_dist) {
+      nearest_label = p.first;
+      min_dist = p.second;
     }
   }
-  std::sort(distances.begin(),
-            distances.end(),
-            [](const std::pair<std::string , double> &left, const std::pair<std::string , double> &right) {
-              return left.second < right.second;
-            });
-
-  // calculate each label's corresponding count
-  std::map<std::string, int> rank;
-  int size = k < distances.size() ? k : (int)distances.size();
-  for (int i = 0; i < size; i++) {
-    if (!rank.count(distances[i].first)) {
-      rank.insert(std::make_pair(distances[i].first, 0));
-    } else {
-      rank[distances[i].first] += 1;
-    }
-  }
-
-  int count = -1;
-  std::string min_label;
-  for (std::pair<std::string, int> p: rank) {
-    if (p.second > count) {
-      min_label = p.first;
-      count = p.second;
-    }
-  }
-  return min_label;
+  return 0;
 }
 
-void evaluate(std::fstream &db_file, std::fstream &test_file, int k) {
-//  std::map<std::string, std::vector<std::vector<double>>> train_features;
-//  std::vector<double> mean;
-//  std::vector<double> standard_deviation;
-//  preprocess(db_file, 6, train_features, mean, standard_deviation, FEATURE_FILE_NAME);
-
+int evaluate(std::fstream &db_file, std::fstream &test_file, int k) {
   std::map<std::string, std::vector<std::vector<double>>> train_features;
   read_features(db_file, train_features, FEATURE_FILE_NAME);
   std::map<std::string, std::vector<std::vector<double>>> test_features;
@@ -238,7 +179,11 @@ void evaluate(std::fstream &db_file, std::fstream &test_file, int k) {
     for (std::vector<double> single_test_feature: single_label_features.second) {
       std::string output_label;
       if (k > 1) {
-        output_label = knn_classifier(db_file, single_test_feature, k);
+        int status = knn_classifier(db_file, single_test_feature, k, output_label);
+        if (status == -1) {
+          std::cout << "At least " << k << " examples in each class!" << std::endl;
+          return -1;
+        }
       } else {
         output_label = euclidean_classifier(db_file, single_test_feature);
       }
@@ -266,4 +211,5 @@ void evaluate(std::fstream &db_file, std::fstream &test_file, int k) {
     db_file << std::endl;
   }
   db_file.close();
+  return 0;
 }

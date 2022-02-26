@@ -17,7 +17,7 @@ bool is_empty(std::fstream &db_file, std::string file_name);
 void clear_file(std::string file_name);
 int write_features(std::fstream &db_file, const std::string& feature_name, const std::vector<double>& features, std::string file_name);
 std::string euclidean_classifier(std::fstream &db_file, std::vector<double> &target_feature);
-std::string knn_classifier(std::fstream &db_file, std::vector<double> &target_feature, int k);
-void evaluate(std::fstream &db_file, std::fstream &test_file, int k);
+int knn_classifier(std::fstream &db_file, std::vector<double> &target_feature, int k, std::string &nearest_label);
+int evaluate(std::fstream &db_file, std::fstream &test_file, int k);
 
 #endif //PROJ3_INCLUDE_DATABASE_H_

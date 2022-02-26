@@ -24,6 +24,7 @@ int main(int argc, char *argv[]) {
   mode = SEGMENTATION;
   std::fstream db_file;
   std::fstream test_file;
+  int k = 4;
 
 
   cv::VideoCapture *capdev;
@@ -112,10 +113,16 @@ int main(int argc, char *argv[]) {
             std::string label_name = euclidean_classifier(db_file, feature_vector);
             cv::putText(segment_img, "NN: " + label_name, draw_vertices[0], cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, cv::Scalar(200,200,250));
           } else if (mode == KNN) {
-            std::string label_name = knn_classifier(db_file, feature_vector, 3);
+            std::string label_name;
+            int status = knn_classifier(db_file, feature_vector, k, label_name);
+            if (status == -1) {
+              std::cout << "At least " << k << " examples in each class!" << std::endl;
+              std::cout << "Back to SEGMENTATION mode!" << std::endl;
+              mode = SEGMENTATION;
+            }
             cv::putText(segment_img, "KNN: " + label_name, draw_vertices[0], cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, cv::Scalar(200,200,250));
           } else if (mode == EVALUATE) {
-            evaluate(db_file, test_file, 3);
+            evaluate(db_file, test_file, k);
             mode = SEGMENTATION;
           }
         }
