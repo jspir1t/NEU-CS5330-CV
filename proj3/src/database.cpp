@@ -90,6 +90,7 @@ void mean_stddev_cal(const std::vector<std::vector<double>>& features, std::vect
   }
 }
 
+// read the features and calculate the mean and standard deviation for each feature
 void preprocess(std::fstream &db_file, int size, std::map<std::string, std::vector<std::vector<double>>> &features, std::vector<double> &mean, std::vector<double> &standard_deviation, std::string file_name) {
   read_features(db_file, features, file_name);
 
@@ -108,7 +109,7 @@ void preprocess(std::fstream &db_file, int size, std::map<std::string, std::vect
 }
 
 
-std::string euclidean_classifier(std::fstream &db_file, std::vector<double> &target_feature) {
+std::string nearest_neighbor_classifier(std::fstream &db_file, std::vector<double> &target_feature) {
   std::map<std::string, std::vector<std::vector<double>>> features;
   std::vector<double> mean;
   std::vector<double> standard_deviation;
@@ -185,14 +186,14 @@ int evaluate(std::fstream &db_file, std::fstream &test_file, int k) {
           return -1;
         }
       } else {
-        output_label = euclidean_classifier(db_file, single_test_feature);
+        output_label = nearest_neighbor_classifier(db_file, single_test_feature);
       }
       std::pair<std::string, std::string> key = std::make_pair(single_label_features.first, output_label);
       evaluation[key] += 1;
     }
   }
 
-  // write to a file
+  // write the evaluation result to a file
   clear_file(EVALUATE_OUTPUT_FILE_NAME);
   open_db(db_file, 'a', EVALUATE_OUTPUT_FILE_NAME);
   db_file << "\t\t";

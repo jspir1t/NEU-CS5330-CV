@@ -80,22 +80,6 @@ int cleanup(cv::Mat &src, cv::Mat &dst, int steps) {
     }
     dst.copyTo(temp);
   }
-
-//  cv::Mat temp_grass_fire(src.rows, src.cols, CV_32S, cv::Scalar(0));
-//  // To grow back, we have to define the background and front-ground reversely to get the distance
-//  // from the original background pixel to the nearest original frontend pixel
-//  grass_fire_transform(temp, temp_grass_fire, BACK_GROUND);
-//  for (int i = 0; i < src.rows; i++) {
-//    for (int j = 0; j < src.cols; j++) {
-//      if (i <= 2 || j <= 2 || i >= dst.rows - 3 || j >= dst.cols - 3) {
-//        dst.at<uchar>(i, j) = BACK_GROUND;
-//      } else if (temp_grass_fire.at<int>(i, j) > steps) {
-//        dst.at<uchar>(i, j) = temp.at<uchar>(i, j);
-//      } else {
-//        dst.at<uchar>(i, j) = FRONT_GROUND;
-//      }
-//    }
-//  }
   return 0;
 }
 
@@ -121,10 +105,6 @@ int segment(cv::Mat &src, cv::Mat &dst, int component_num, std::map<int, cv::Mat
       }
     }
   }
-//  for (auto i: border_components) {
-//    std::cout << "border: " << i << " ";
-//  }
-//  std::cout << std::endl;
 
   // store the components with its label and size of area(skip background)
   std::vector<std::pair<int, int>> components;
@@ -143,10 +123,6 @@ int segment(cv::Mat &src, cv::Mat &dst, int component_num, std::map<int, cv::Mat
             [](const std::pair<int, int> &left, const std::pair<int, int> &right) {
               return left.second > right.second;
             });
-//  for (auto i: components) {
-//    std::cout << "kept comp:" << i.first << " ";
-//  }
-//  std::cout << std::endl;
   if (components.empty()) {
     return -1;
   }
@@ -187,12 +163,12 @@ int segment(cv::Mat &src, cv::Mat &dst, int component_num, std::map<int, cv::Mat
 }
 
 void mark_object(cv::Mat &segmented_img, std::vector<cv::Point> draw_vertices) {
-  cv::circle(segmented_img, draw_vertices[0], 3, cv::Scalar(0, 255, 255), 1);
-  cv::line(segmented_img, draw_vertices[1], draw_vertices[2], cv::Scalar(0, 255, 0), 1);
-  cv::line(segmented_img, draw_vertices[3], draw_vertices[4], cv::Scalar(0, 255, 0), 1);
-  cv::line(segmented_img, draw_vertices[4], draw_vertices[6], cv::Scalar(0, 255, 0), 1);
-  cv::line(segmented_img, draw_vertices[6], draw_vertices[5], cv::Scalar(0, 255, 0), 1);
-  cv::line(segmented_img, draw_vertices[5], draw_vertices[3], cv::Scalar(0, 255, 0), 1);
+  cv::circle(segmented_img, draw_vertices[0], 2, cv::Scalar(0, 255, 255), 2);
+  cv::line(segmented_img, draw_vertices[1], draw_vertices[2], cv::Scalar(0, 255, 0), 2);
+  cv::line(segmented_img, draw_vertices[3], draw_vertices[4], cv::Scalar(0, 255, 0), 2);
+  cv::line(segmented_img, draw_vertices[4], draw_vertices[6], cv::Scalar(0, 255, 0), 2);
+  cv::line(segmented_img, draw_vertices[6], draw_vertices[5], cv::Scalar(0, 255, 0), 2);
+  cv::line(segmented_img, draw_vertices[5], draw_vertices[3], cv::Scalar(0, 255, 0), 2);
 }
 
 int features(cv::Mat &src, std::vector<double> &feature_vector, std::vector<cv::Point> &draw_vertices) {
@@ -238,13 +214,11 @@ int features(cv::Mat &src, std::vector<double> &feature_vector, std::vector<cv::
   // get the width and height feature
   double height = quad_axis[2] - quad_axis[3];
   double width = quad_axis[1] - quad_axis[0];
-//  std::cout << "height and width: " << height << "," << width << std::endl;
   feature_vector.emplace_back(height / width);
 
 
   // get filled ratio feature
   feature_vector.emplace_back(moments.m00 / (height * width));
-//  std::cout << "fill ration: " << moments.m00 / (height * width) << std::endl;
 
   // get second moment about the central axis feature
   double beta = angle + CV_PI / 2.;

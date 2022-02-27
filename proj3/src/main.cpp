@@ -3,7 +3,7 @@
 #include "segmentation.h"
 #include "database.h"
 
-enum mode{
+enum mode {
   SEGMENTATION = 1,
   TRAIN_DATA_PREP = 2,
   TRAIN_SAVE = 3,
@@ -15,17 +15,21 @@ enum mode{
 } mode;
 
 int main(int argc, char *argv[]) {
-  // if the feature file exists, clear it at first
+  // if the feature file exists and evaluation result file exist, clear them at first
   clear_file(FEATURE_FILE_NAME);
   clear_file(EVALUATE_FILE_NAME);
 
+  // number of component shown, ordered by area size
   int component_num = 5;
+  // minimum size of area to be shown
   int min_area = 1000;
   mode = SEGMENTATION;
   std::fstream db_file;
   std::fstream test_file;
-  int k = 4;
-
+  // set up k for knn
+  int k = 3;
+  // set up steps to shrink or grow
+  int steps = 3;
 
   cv::VideoCapture *capdev;
   // open the video device
@@ -48,36 +52,43 @@ int main(int argc, char *argv[]) {
       break;
     }
 
+    // thresholding the image
     cv::Mat threshold_image(frame.rows, frame.cols, CV_8UC1, cv::Scalar(0));
     threshold(frame, threshold_image, THRESHOLD);
 
+    // clean the image with shrink and grow
     cv::Mat cleaned_img(frame.rows, frame.cols, CV_8UC1, cv::Scalar(0));
-    cleanup(threshold_image, cleaned_img, 3);
+    cleanup(threshold_image, cleaned_img, steps);
 
     cv::imshow("Video", frame);
     cv::imshow("Threshold", threshold_image);
     cv::imshow("cleanup", cleaned_img);
 
+    // segment the mat into different components, the major component is the one with the largest area(excluding background)
     std::map<int, cv::Mat> regions;
     cv::Mat segment_img(frame.rows, frame.cols, CV_8UC3, cv::Scalar(0));
     cv::Mat major_component(frame.rows, frame.cols, CV_8UC1, cv::Scalar(0));
     int status = segment(cleaned_img, segment_img, component_num, regions, min_area, major_component);
 
 
-    // if no component detected, show the pure background image
+    // if no component detected, show the pure background image with a sign "No component detected"
     if (status != 0) {
       cv::Mat pure_black = cv::Mat(frame.rows, frame.cols, CV_8UC3, cv::Scalar(0));
-      cv::putText(pure_black, "No component detected", cv::Point(frame.rows/2, frame.cols/2), cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0, cv::Scalar(0,0,255));
+      cv::putText(pure_black,
+                  "No component detected",
+                  cv::Point(frame.rows / 2, frame.cols / 2),
+                  cv::FONT_HERSHEY_COMPLEX_SMALL,
+                  1.0,
+                  cv::Scalar(0, 0, 255));
       cv::imshow("components", pure_black);
     } else {
+      // if you are in training data or test data preparation, it will only mark the major component
       if (mode == TRAIN_DATA_PREP || mode == TEST_DATA_PREP) {
-//        std::vector<double> feature_vector;
         std::vector<cv::Point> draw_vertices;
         single_feature_vector.clear();
         features(major_component, single_feature_vector, draw_vertices);
         mark_object(segment_img, draw_vertices);
-      }
-      else if (mode == TRAIN_SAVE) {
+      } else if (mode == TRAIN_SAVE) {
         std::cout << "Saving current feature for training..." << std::endl;
         std::cout << "Please type in the name for this object:";
         std::string feature_name;
@@ -104,15 +115,24 @@ int main(int argc, char *argv[]) {
         std::cout << "Back to TEST_DATA_PREP mode, the major component is marked" << std::endl;
         std::cout << "Press 's' to save the feature or other keys to other modes!" << std::endl;
       } else {
+        // if you are in the default segmentation mode, it will show all the components in the window
         for (std::pair<int, cv::Mat> region: regions) {
           std::vector<double> feature_vector;
           std::vector<cv::Point> draw_vertices;
           features(region.second, feature_vector, draw_vertices);
           mark_object(segment_img, draw_vertices);
+          // show the result from NN algorithm in the mat
           if (mode == NN) {
-            std::string label_name = euclidean_classifier(db_file, feature_vector);
-            cv::putText(segment_img, "NN: " + label_name, draw_vertices[0], cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, cv::Scalar(200,200,250));
-          } else if (mode == KNN) {
+            std::string label_name = nearest_neighbor_classifier(db_file, feature_vector);
+            cv::putText(segment_img,
+                        "NN: " + label_name,
+                        draw_vertices[0],
+                        cv::FONT_HERSHEY_COMPLEX_SMALL,
+                        0.8,
+                        cv::Scalar(200, 200, 250));
+          }
+            // show the result from KNN algorithm in the mat
+          else if (mode == KNN) {
             std::string label_name;
             int status = knn_classifier(db_file, feature_vector, k, label_name);
             if (status == -1) {
@@ -120,22 +140,29 @@ int main(int argc, char *argv[]) {
               std::cout << "Back to SEGMENTATION mode!" << std::endl;
               mode = SEGMENTATION;
             }
-            cv::putText(segment_img, "KNN: " + label_name, draw_vertices[0], cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, cv::Scalar(200,200,250));
-          } else if (mode == EVALUATE) {
+            cv::putText(segment_img,
+                        "KNN: " + label_name,
+                        draw_vertices[0],
+                        cv::FONT_HERSHEY_COMPLEX_SMALL,
+                        0.8,
+                        cv::Scalar(200, 200, 250));
+          }
+            // evaluate the features in "../test_features.txt" and write the confusion matrix in "../evaluation.txt"
+          else if (mode == EVALUATE) {
             evaluate(db_file, test_file, k);
             mode = SEGMENTATION;
           }
         }
-  //      // show the top k components
-  //      int window_size = (int)regions.size();
-  //      cv::Mat dst = cv::Mat(frame.rows, window_size * frame.cols, CV_8UC1);
-  //      int index = 0;
-  //      for (auto p: regions) {
-  //        p.second.copyTo(dst.rowRange(0, frame.rows).colRange(index * frame.cols, (index + 1) * frame.cols));
-  //        index++;
-  //      }
-  //      cv::namedWindow("window", cv::WINDOW_NORMAL);
-  //      cv::imshow("window", dst);
+        //      // show the top k components
+        //      int window_size = (int)regions.size();
+        //      cv::Mat dst = cv::Mat(frame.rows, window_size * frame.cols, CV_8UC1);
+        //      int index = 0;
+        //      for (auto p: regions) {
+        //        p.second.copyTo(dst.rowRange(0, frame.rows).colRange(index * frame.cols, (index + 1) * frame.cols));
+        //        index++;
+        //      }
+        //      cv::namedWindow("window", cv::WINDOW_NORMAL);
+        //      cv::imshow("window", dst);
       }
       cv::imshow("components", segment_img);
     }
@@ -156,7 +183,7 @@ int main(int argc, char *argv[]) {
     } else if (key == 's') {
       if (mode != TRAIN_DATA_PREP && mode != TEST_DATA_PREP) {
         std::cout << "Please enter the TRAIN_DATA_PREP mode or TEST_DATA_PREP mode at first!" << std::endl;
-      } else if (mode == TRAIN_DATA_PREP){
+      } else if (mode == TRAIN_DATA_PREP) {
         mode = TRAIN_SAVE;
       } else {
         mode = EVALUATE_SAVE;
@@ -169,7 +196,7 @@ int main(int argc, char *argv[]) {
         mode = NN;
         std::cout << "You are in NEAREST_NEIGHBOR_CLASSIFY mode!" << std::endl;
       }
-    } else if (key =='k') {
+    } else if (key == 'k') {
       if (is_empty(db_file, FEATURE_FILE_NAME)) {
         std::cout << "No features in database, please add some features in TRAIN_DATA_PREP mode" << std::endl;
         mode = SEGMENTATION;
@@ -188,13 +215,13 @@ int main(int argc, char *argv[]) {
       } else {
         mode = EVALUATE;
         std::cout << "You are in EVALUATE mode!" << std::endl;
-        std::cout << "Confusion Matrix generated in: " <<  EVALUATE_OUTPUT_FILE_NAME << std::endl;
+        std::cout << "Confusion Matrix generated in: " << EVALUATE_OUTPUT_FILE_NAME << std::endl;
       }
     } else if (key == 'a') {
-        cv::imwrite("../origin.jpg", frame);
-        cv::imwrite("../threshold.jpg", threshold_image);
-        cv::imwrite("../cleanup.jpg", cleaned_img);
-        cv::imwrite("../components.jpg", segment_img);
+      cv::imwrite("../origin.jpg", frame);
+      cv::imwrite("../threshold.jpg", threshold_image);
+      cv::imwrite("../cleanup.jpg", cleaned_img);
+      cv::imwrite("../components.jpg", segment_img);
     }
   }
   delete capdev;
