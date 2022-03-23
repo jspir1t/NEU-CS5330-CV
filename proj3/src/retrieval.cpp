@@ -1,4 +1,4 @@
-#include "segmentation.h"
+#include "retrieval.h"
 
 int threshold(const cv::Mat &src, cv::Mat &dst, int threshold) {
   for (int i = 0; i < src.rows; i++) {
@@ -14,12 +14,12 @@ int threshold(const cv::Mat &src, cv::Mat &dst, int threshold) {
   return 0;
 }
 
-int grass_fire_transform(const cv::Mat &src, cv::Mat &dst, int FRONT_END_VALUE) {
+int grass_fire_transform(const cv::Mat &src, cv::Mat &dst) {
   // Pass 1
   int up, left;
   for (int i = 0; i < src.rows; i++) {
     for (int j = 0; j < src.cols; j++) {
-      if (src.at<uchar>(i, j) == FRONT_END_VALUE) {
+      if (src.at<uchar>(i, j) == FRONT_GROUND) {
         up = i == 0 ? 0 : dst.at<int>(i - 1, j);
         left = j == 0 ? 0 : dst.at<int>(i, j - 1);
         dst.at<int>(i, j) = 1 + std::min(up, left);
@@ -33,7 +33,7 @@ int grass_fire_transform(const cv::Mat &src, cv::Mat &dst, int FRONT_END_VALUE) 
   int down, right;
   for (int i = src.rows - 1; i >= 0; i--) {
     for (int j = src.cols - 1; j >= 0; j--) {
-      if (src.at<uchar>(i, j) == FRONT_END_VALUE) {
+      if (src.at<uchar>(i, j) == FRONT_GROUND) {
         down = i == src.rows - 1 ? 0 : dst.at<int>(i + 1, j);
         right = j == src.cols - 1 ? 0 : dst.at<int>(i, j + 1);
         dst.at<int>(i, j) = std::min(dst.at<int>(i, j), 1 + std::min(down, right));
@@ -48,7 +48,7 @@ int grass_fire_transform(const cv::Mat &src, cv::Mat &dst, int FRONT_END_VALUE) 
 int cleanup(cv::Mat &src, cv::Mat &dst, int steps) {
   // shrink at first
   cv::Mat src_grass_file(src.rows, src.cols, CV_32S, cv::Scalar(0));
-  grass_fire_transform(src, src_grass_file, FRONT_GROUND);
+  grass_fire_transform(src, src_grass_file);
 
   cv::Mat temp(src.rows, src.cols, CV_8UC1, cv::Scalar(0));
   for (int i = 0; i < src.rows; i++) {
@@ -163,7 +163,7 @@ int segment(cv::Mat &src, cv::Mat &dst, int component_num, std::map<int, cv::Mat
 }
 
 void mark_object(cv::Mat &segmented_img, std::vector<cv::Point> draw_vertices) {
-  cv::circle(segmented_img, draw_vertices[0], 2, cv::Scalar(0, 255, 255), 2);
+  cv::circle(segmented_img, draw_vertices[0], 2, cv::Scalar(0, 0, 255), 2);
   cv::line(segmented_img, draw_vertices[1], draw_vertices[2], cv::Scalar(0, 255, 0), 2);
   cv::line(segmented_img, draw_vertices[3], draw_vertices[4], cv::Scalar(0, 255, 0), 2);
   cv::line(segmented_img, draw_vertices[4], draw_vertices[6], cv::Scalar(0, 255, 0), 2);

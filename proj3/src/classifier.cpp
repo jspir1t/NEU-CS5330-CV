@@ -1,4 +1,4 @@
-#include "database.h"
+#include "classifier.h"
 
 void clear_file(std::string file_name) {
   std::ofstream f(file_name, std::ofstream::out | std::ofstream::trunc);

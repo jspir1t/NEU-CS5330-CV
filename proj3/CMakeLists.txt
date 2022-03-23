@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 include_directories(include)
 
-add_executable(main src/main.cpp src/segmentation.cpp src/database.cpp)
+add_executable(main src/client.cpp src/retrieval.cpp src/classifier.cpp)
 
 find_package(OpenCV REQUIRED)
 

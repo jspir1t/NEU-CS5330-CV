@@ -1,7 +1,7 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
-#include "segmentation.h"
-#include "database.h"
+#include "retrieval.h"
+#include "classifier.h"
 
 enum mode {
   SEGMENTATION = 1,
@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
   // set up k for knn
   int k = 3;
   // set up steps to shrink or grow
-  int steps = 3;
+  int steps = 5;
 
   cv::VideoCapture *capdev;
   // open the video device
@@ -66,10 +66,12 @@ int main(int argc, char *argv[]) {
 
     // segment the mat into different components, the major component is the one with the largest area(excluding background)
     std::map<int, cv::Mat> regions;
-    cv::Mat segment_img(frame.rows, frame.cols, CV_8UC3, cv::Scalar(0));
+    cv::Mat components_img(frame.rows, frame.cols, CV_8UC3, cv::Scalar(0));
     cv::Mat major_component(frame.rows, frame.cols, CV_8UC1, cv::Scalar(0));
-    int status = segment(cleaned_img, segment_img, component_num, regions, min_area, major_component);
+    int status = segment(cleaned_img, components_img, component_num, regions, min_area, major_component);
 
+    int window_size = (int)regions.size();
+    cv::Mat segmentation_img = cv::Mat(frame.rows, window_size * frame.cols, CV_8UC1);
 
     // if no component detected, show the pure background image with a sign "No component detected"
     if (status != 0) {
@@ -81,13 +83,14 @@ int main(int argc, char *argv[]) {
                   1.0,
                   cv::Scalar(0, 0, 255));
       cv::imshow("components", pure_black);
+      cv::imshow("segmentation", pure_black);
     } else {
       // if you are in training data or test data preparation, it will only mark the major component
       if (mode == TRAIN_DATA_PREP || mode == TEST_DATA_PREP) {
         std::vector<cv::Point> draw_vertices;
         single_feature_vector.clear();
         features(major_component, single_feature_vector, draw_vertices);
-        mark_object(segment_img, draw_vertices);
+        mark_object(components_img, draw_vertices);
       } else if (mode == TRAIN_SAVE) {
         std::cout << "Saving current feature for training..." << std::endl;
         std::cout << "Please type in the name for this object:";
@@ -120,11 +123,11 @@ int main(int argc, char *argv[]) {
           std::vector<double> feature_vector;
           std::vector<cv::Point> draw_vertices;
           features(region.second, feature_vector, draw_vertices);
-          mark_object(segment_img, draw_vertices);
+          mark_object(components_img, draw_vertices);
           // show the result from NN algorithm in the mat
           if (mode == NN) {
             std::string label_name = nearest_neighbor_classifier(db_file, feature_vector);
-            cv::putText(segment_img,
+            cv::putText(components_img,
                         "NN: " + label_name,
                         draw_vertices[0],
                         cv::FONT_HERSHEY_COMPLEX_SMALL,
@@ -140,7 +143,7 @@ int main(int argc, char *argv[]) {
               std::cout << "Back to SEGMENTATION mode!" << std::endl;
               mode = SEGMENTATION;
             }
-            cv::putText(segment_img,
+            cv::putText(components_img,
                         "KNN: " + label_name,
                         draw_vertices[0],
                         cv::FONT_HERSHEY_COMPLEX_SMALL,
@@ -153,18 +156,16 @@ int main(int argc, char *argv[]) {
             mode = SEGMENTATION;
           }
         }
-        //      // show the top k components
-        //      int window_size = (int)regions.size();
-        //      cv::Mat dst = cv::Mat(frame.rows, window_size * frame.cols, CV_8UC1);
-        //      int index = 0;
-        //      for (auto p: regions) {
-        //        p.second.copyTo(dst.rowRange(0, frame.rows).colRange(index * frame.cols, (index + 1) * frame.cols));
-        //        index++;
-        //      }
-        //      cv::namedWindow("window", cv::WINDOW_NORMAL);
-        //      cv::imshow("window", dst);
       }
-      cv::imshow("components", segment_img);
+      // show the top k components
+      int index = 0;
+      for (auto p: regions) {
+        p.second.copyTo(segmentation_img.rowRange(0, frame.rows).colRange(index * frame.cols, (index + 1) * frame.cols));
+        index++;
+      }
+//        cv::imshow("segmentation", segmentation_img);
+      cv::imshow("segmentation", segmentation_img);
+      cv::imshow("components", components_img);
     }
 
     // see if there is a waiting keystroke
@@ -221,7 +222,8 @@ int main(int argc, char *argv[]) {
       cv::imwrite("../origin.jpg", frame);
       cv::imwrite("../threshold.jpg", threshold_image);
       cv::imwrite("../cleanup.jpg", cleaned_img);
-      cv::imwrite("../components.jpg", segment_img);
+      cv::imwrite("../segmentation.jpg", segmentation_img);
+      cv::imwrite("../components.jpg", components_img);
     }
   }
   delete capdev;
