@@ -30,22 +30,22 @@ void print_set(const std::string &comment, std::vector<T> set) {
 void print_matrix(const std::string &comment, cv::Mat matrix);
 
 /**
- * Write the camera matrix and distortion coefficients into a csv file
+ * Write the camera matrix and distance coefficients into a csv file
  * @param file_name the name of csv file
  * @param camera_matrix the camera intrinsic matrix
- * @param distortion_coefficients the vector of distortion coefficients
+ * @param distance_coefficients the vector of distance coefficients
  */
 void write_intrinsic_paras(const std::string &file_name,
                            const cv::Mat &camera_matrix,
-                           const cv::Mat &distortion_coefficients);
+                           const cv::Mat &distance_coefficients);
 
 /**
- * Read the camera matrix and distortion coefficients from the csv file
+ * Read the camera matrix and distance coefficients from the csv file
  * @param file_name the name of csv file
  * @param camera_matrix the camera intrinsic matrix
- * @param distortion_coefficients the vector of distortion coefficients
+ * @param distance_coefficients the vector of distance coefficients
  */
-void read_intrinsic_paras(const std::string &file_name, cv::Mat &camera_matrix, cv::Mat &distortion_coefficients);
+void read_intrinsic_paras(const std::string &file_name, cv::Mat &camera_matrix, cv::Mat &distance_coefficients);
 
 /**
  * Read the corresponding .obj file based on the @param{file_path}, add the vertices and faces into the vectors
@@ -64,14 +64,14 @@ void read_obj(const std::string &file_path,
 void draw_axes(const cv::Mat &rvec,
                const cv::Mat &tvec,
                const cv::Mat &camera_matrix,
-               const cv::Mat &distortion_coefficients,
+               const cv::Mat &distance_coefficients,
                cv::Mat &frame,
                cv::Point2f origin);
 
 void draw_object(const cv::Mat &rvec,
                  const cv::Mat &tvec,
                  const cv::Mat &camera_matrix,
-                 const cv::Mat &distortion_coefficients,
+                 const cv::Mat &distance_coefficients,
                  const std::vector<cv::Point3f> &vertices,
                  std::vector<std::vector<int>> &faces,
                  cv::Mat &frame

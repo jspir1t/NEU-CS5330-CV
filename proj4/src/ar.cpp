@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     points_per_row = 4;
     points_per_column = 11;
   } else {
-    std::cout << "Usage: ./main.exe <camera_index> <target> <obj_name>" << std::endl;
+    std::cout << "Usage: ./ar.exe <camera_index> <target> <obj_name>" << std::endl;
     std::cout << "<camera_index> could be any integer, <target> should be chessboard or circlesgrid" << std::endl;
     exit(-1);
   }
@@ -37,9 +37,10 @@ int main(int argc, char *argv[]) {
 
   cv::TermCriteria termcrit(cv::TermCriteria::COUNT | cv::TermCriteria::EPS, 20, 0.03);
   cv::Mat camera_matrix;
-  cv::Mat distortion_coefficients;
+  cv::Mat distance_coefficients;
   cv::Mat rvec, tvec;
   bool show_obj = false;
+  int count = 0;
 
   std::vector<cv::Point3f> vertices;
   std::vector<std::vector<int>> faces;
@@ -65,7 +66,7 @@ int main(int argc, char *argv[]) {
   cv::Mat grey_scale;
 
   // read in the intrinsic parameters
-  read_intrinsic_paras("camera_intrinsic_paras_camera_" + camera_index + "_" + target + ".csv", camera_matrix, distortion_coefficients);
+  read_intrinsic_paras("camera_intrinsic_paras_camera_" + camera_index + "_" + target + ".csv", camera_matrix, distance_coefficients);
 
   for (;;) {
     *capdev >> frame; // get a new frame from the camera, treat as a stream
@@ -103,10 +104,10 @@ int main(int argc, char *argv[]) {
           }
         }
       }
-      cv::solvePnP(point_set, corner_set, camera_matrix, distortion_coefficients, rvec, tvec);
-//      print_matrix("rotation matrix", rvec);
-//      print_matrix("translation matrix", tvec);
-      draw_axes(rvec, tvec, camera_matrix, distortion_coefficients, frame, corner_set[0]);
+      cv::solvePnP(point_set, corner_set, camera_matrix, distance_coefficients, rvec, tvec);
+      print_matrix("rotation matrix", rvec);
+      print_matrix("translation matrix", tvec);
+      draw_axes(rvec, tvec, camera_matrix, distance_coefficients, frame, corner_set[0]);
     }
 
     // see if there is a waiting keystroke
@@ -125,8 +126,11 @@ int main(int argc, char *argv[]) {
         std::cout << "No Corners found!" << std::endl;
       } else {
         show_obj = true;
-        draw_object(rvec, tvec, camera_matrix, distortion_coefficients, vertices, faces, frame);
+        draw_object(rvec, tvec, camera_matrix, distance_coefficients, vertices, faces, frame);
       }
+    }
+    if (key == 's') {
+      cv::imwrite("../ar_captured_" + std::to_string(count++) + ".jpg", frame);
     }
     cv::imshow("Video", frame);
   }

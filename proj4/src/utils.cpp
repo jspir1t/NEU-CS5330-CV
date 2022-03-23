@@ -13,13 +13,13 @@ void print_matrix(const std::string &comment, cv::Mat matrix) {
 
 void write_intrinsic_paras(const std::string &file_name,
                            const cv::Mat &camera_matrix,
-                           const cv::Mat &distortion_coefficients) {
+                           const cv::Mat &distance_coefficients) {
   std::ofstream intrinsic_file;
   intrinsic_file.open("../" + file_name);
   intrinsic_file.flush();
 
   std::string header = "cm_00,cm_01,cm_02,cm_10,cm_11,cm_12,cm_20,cm_21,cm_22,";
-  for (int i = 0; i < distortion_coefficients.rows * distortion_coefficients.cols; i++) {
+  for (int i = 0; i < distance_coefficients.rows * distance_coefficients.cols; i++) {
     header += "dc_" + std::to_string(i) + ",";
   }
   header += "\n";
@@ -31,15 +31,15 @@ void write_intrinsic_paras(const std::string &file_name,
     }
   }
 
-  for (int i = 0; i < distortion_coefficients.rows; i++) {
-    for (int j = 0; j < distortion_coefficients.cols; j++) {
-      intrinsic_file << distortion_coefficients.at<double>(i, j) << ",";
+  for (int i = 0; i < distance_coefficients.rows; i++) {
+    for (int j = 0; j < distance_coefficients.cols; j++) {
+      intrinsic_file << distance_coefficients.at<double>(i, j) << ",";
     }
   }
   intrinsic_file.close();
 }
 
-void read_intrinsic_paras(const std::string &file_name, cv::Mat &camera_matrix, cv::Mat &distortion_coefficients) {
+void read_intrinsic_paras(const std::string &file_name, cv::Mat &camera_matrix, cv::Mat &distance_coefficients) {
   std::fstream intrinsic_file;
   intrinsic_file.open("../" + file_name);
 
@@ -52,7 +52,7 @@ void read_intrinsic_paras(const std::string &file_name, cv::Mat &camera_matrix, 
   std::getline(intrinsic_file, line, '\n');
 
   camera_matrix = cv::Mat::zeros(3, 3, CV_64FC1);
-  distortion_coefficients = cv::Mat(1, 5, CV_64FC1);
+  distance_coefficients = cv::Mat(1, 5, CV_64FC1);
   std::stringstream ss(line);
   while (ss.good()) {
     std::string substr;
@@ -67,9 +67,9 @@ void read_intrinsic_paras(const std::string &file_name, cv::Mat &camera_matrix, 
       camera_matrix.at<double>(i, j) = result.at(index++);
     }
   }
-  for (int i = 0; i < distortion_coefficients.rows; i++) {
-    for (int j = 0; j < distortion_coefficients.cols; j++) {
-      distortion_coefficients.at<double>(i, j) = result.at(index++);
+  for (int i = 0; i < distance_coefficients.rows; i++) {
+    for (int j = 0; j < distance_coefficients.cols; j++) {
+      distance_coefficients.at<double>(i, j) = result.at(index++);
     }
   }
   intrinsic_file.close();
@@ -85,7 +85,7 @@ void read_obj(const std::string &file_path,
   std::ifstream file(file_path);
   if (!file.good()) {
     std::cout << "No such file" << std::endl;
-    std::cout << "Candidate objects: [cow, teapot, teddy], Please refer to the objs directory";
+    std::cout << "Candidate objects: [humanoid, teapot, teddy], Please refer to the objs directory";
     exit(-1);
   }
   while (std::getline(file, line)) {
@@ -128,14 +128,14 @@ void read_obj(const std::string &file_path,
  * @param rvec rotation vector
  * @param tvec translation vector
  * @param camera_matrix intrinsic matrix
- * @param distortion_coefficients distortion coefficients
+ * @param distance_coefficients distance coefficients
  * @param frame the current frame
  * @param origin the origin point
  */
 void draw_axes(const cv::Mat &rvec,
                const cv::Mat &tvec,
                const cv::Mat &camera_matrix,
-               const cv::Mat &distortion_coefficients,
+               const cv::Mat &distance_coefficients,
                cv::Mat &frame,
                cv::Point2f origin) {
   std::vector<cv::Point3f> object_points;
@@ -143,7 +143,7 @@ void draw_axes(const cv::Mat &rvec,
   object_points.emplace_back(0., -3., 0.);
   object_points.emplace_back(0., 0., 3.);
   std::vector<cv::Point2f> image_points;
-  cv::projectPoints(object_points, rvec, tvec, camera_matrix, distortion_coefficients, image_points);
+  cv::projectPoints(object_points, rvec, tvec, camera_matrix, distance_coefficients, image_points);
   cv::arrowedLine(frame, origin, image_points[0], cv::Scalar(255, 0, 0), 2);
   cv::arrowedLine(frame, origin, image_points[1], cv::Scalar(0, 255, 0), 2);
   cv::arrowedLine(frame, origin, image_points[2], cv::Scalar(0, 0, 255), 2);
@@ -154,7 +154,7 @@ void draw_axes(const cv::Mat &rvec,
  * @param rvec rotation vector
  * @param tvec translation vector
  * @param camera_matrix intrinsic matrix
- * @param distortion_coefficients distortion coefficients
+ * @param distance_coefficients distance coefficients
  * @param vertices real world point represented with 3 values
  * @param faces the vector of faces represented by a vector of vertices indices
  * @param frame current frame
@@ -162,25 +162,28 @@ void draw_axes(const cv::Mat &rvec,
 void draw_object(const cv::Mat &rvec,
                  const cv::Mat &tvec,
                  const cv::Mat &camera_matrix,
-                 const cv::Mat &distortion_coefficients,
+                 const cv::Mat &distance_coefficients,
                  const std::vector<cv::Point3f> &vertices,
                  std::vector<std::vector<int>> &faces,
                  cv::Mat &frame
 ) {
   // show 3d objects
   std::vector<cv::Point2f> object_image_points;
-  cv::projectPoints(vertices, rvec, tvec, camera_matrix, distortion_coefficients, object_image_points);
+  cv::projectPoints(vertices, rvec, tvec, camera_matrix, distance_coefficients, object_image_points);
   for (std::vector<int> &face: faces) {
-    for (int j = 0; j < face.size() - 1; j++) {
-      cv::line(frame,
-               object_image_points[face[j] - 1],
-               object_image_points[face[j + 1] - 1],
-               cv::Scalar(0, 255, 0),
-               1);
-    }
+    cv::line(frame,
+             object_image_points[face[0] - 1],
+             object_image_points[face[1] - 1],
+             cv::Scalar(0, 255, 0),
+             1);
+    cv::line(frame,
+             object_image_points[face[1] - 1],
+             object_image_points[face[2] - 1],
+             cv::Scalar(0, 255, 0),
+             1);
     // draw the line between the last vertices and the first vertices in a face
     cv::line(frame,
-             object_image_points[face[face.size() - 1] - 1],
+             object_image_points[face[2] - 1],
              object_image_points[face[0] - 1],
              cv::Scalar(0, 255, 0),
              1);
