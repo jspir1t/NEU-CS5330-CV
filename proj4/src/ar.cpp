@@ -2,9 +2,9 @@
 #include "utils.h"
 
 int main(int argc, char *argv[]) {
-  if (argc != 4) {
-    std::cout << "Usage: ./ar.exe <camera_index> <target> <obj_name>" << std::endl;
-    std::cout << "<camera_index> could be any integer, <target> should be chessboard or circlesgrid" << std::endl;
+  if (argc != 3) {
+    std::cout << "Usage: ./ar.exe <target> <obj_name>" << std::endl;
+    std::cout << "<target> should be chessboard or circlesgrid, <obj_name> should be one in objs folder" << std::endl;
     exit(-1);
   }
   // circle grid configuration
@@ -16,11 +16,11 @@ int main(int argc, char *argv[]) {
   cv::Ptr<cv::SimpleBlobDetector> detector = cv::SimpleBlobDetector::create(params);
 
   int points_per_row, points_per_column;
-  std::string target = std::string(argv[2]);
+  std::string target = std::string(argv[1]);
   if (target == "chessboard") {
     points_per_row = 9;
     points_per_column = 6;
-  } else if (target == "circlesgrid"){
+  } else if (target == "circlesgrid") {
     points_per_row = 4;
     points_per_column = 11;
   } else {
@@ -29,7 +29,6 @@ int main(int argc, char *argv[]) {
     exit(-1);
   }
 
-  std::string camera_index = std::string(argv[1]);
   cv::Size pattern_size = cv::Size(points_per_row, points_per_column);
 
   std::vector<cv::Point2f> corner_set;
@@ -37,7 +36,7 @@ int main(int argc, char *argv[]) {
 
   cv::TermCriteria termcrit(cv::TermCriteria::COUNT | cv::TermCriteria::EPS, 20, 0.03);
   cv::Mat camera_matrix;
-  cv::Mat distance_coefficients;
+  cv::Mat distortion_coefficients;
   cv::Mat rvec, tvec;
   bool show_obj = false;
   int count = 0;
@@ -45,9 +44,9 @@ int main(int argc, char *argv[]) {
   std::vector<cv::Point3f> vertices;
   std::vector<std::vector<int>> faces;
   if (target == "chessboard") {
-    read_obj("../objs/" + std::string(argv[3]) + ".obj", vertices, faces, 4.f, -2.5f);
+    read_obj("../objs/" + std::string(argv[2]) + ".obj", vertices, faces, 4.f, -2.5f);
   } else {
-    read_obj("../objs/" + std::string(argv[3]) + ".obj", vertices, faces, 3.5f, -5.f);
+    read_obj("../objs/" + std::string(argv[2]) + ".obj", vertices, faces, 3.5f, -5.f);
   }
 
   cv::VideoCapture *capdev;
@@ -66,7 +65,7 @@ int main(int argc, char *argv[]) {
   cv::Mat grey_scale;
 
   // read in the intrinsic parameters
-  read_intrinsic_paras("camera_intrinsic_paras_camera_" + camera_index + "_" + target + ".csv", camera_matrix, distance_coefficients);
+  read_intrinsic_paras("camera_intrinsic_paras_" + target + ".csv", camera_matrix, distortion_coefficients);
 
   for (;;) {
     *capdev >> frame; // get a new frame from the camera, treat as a stream
@@ -100,14 +99,14 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < points_per_column; i++) {
           int j = (i % 2) == 0 ? 0 : 1;
           for (; j < points_per_row * 2; j = j + 2) {
-            point_set.push_back(cv::Point3f((float)j, (float)(-i), 0.f));
+            point_set.push_back(cv::Point3f((float) j, (float) (-i), 0.f));
           }
         }
       }
-      cv::solvePnP(point_set, corner_set, camera_matrix, distance_coefficients, rvec, tvec);
+      cv::solvePnP(point_set, corner_set, camera_matrix, distortion_coefficients, rvec, tvec);
       print_matrix("rotation matrix", rvec);
       print_matrix("translation matrix", tvec);
-      draw_axes(rvec, tvec, camera_matrix, distance_coefficients, frame, corner_set[0]);
+      draw_axes(rvec, tvec, camera_matrix, distortion_coefficients, frame, corner_set[0]);
     }
 
     // see if there is a waiting keystroke
@@ -126,7 +125,7 @@ int main(int argc, char *argv[]) {
         std::cout << "No Corners found!" << std::endl;
       } else {
         show_obj = true;
-        draw_object(rvec, tvec, camera_matrix, distance_coefficients, vertices, faces, frame);
+        draw_object(rvec, tvec, camera_matrix, distortion_coefficients, vertices, faces, frame);
       }
     }
     if (key == 's') {

@@ -30,22 +30,22 @@ void print_set(const std::string &comment, std::vector<T> set) {
 void print_matrix(const std::string &comment, cv::Mat matrix);
 
 /**
- * Write the camera matrix and distance coefficients into a csv file
+ * Write the camera matrix and distortion coefficients into a csv file
  * @param file_name the name of csv file
  * @param camera_matrix the camera intrinsic matrix
- * @param distance_coefficients the vector of distance coefficients
+ * @param distortion_coefficients the vector of distortion coefficients
  */
 void write_intrinsic_paras(const std::string &file_name,
                            const cv::Mat &camera_matrix,
-                           const cv::Mat &distance_coefficients);
+                           const cv::Mat &distortion_coefficients);
 
 /**
- * Read the camera matrix and distance coefficients from the csv file
+ * Read the camera matrix and distortion coefficients from the csv file
  * @param file_name the name of csv file
  * @param camera_matrix the camera intrinsic matrix
- * @param distance_coefficients the vector of distance coefficients
+ * @param distortion_coefficients the vector of distortion coefficients
  */
-void read_intrinsic_paras(const std::string &file_name, cv::Mat &camera_matrix, cv::Mat &distance_coefficients);
+void read_intrinsic_paras(const std::string &file_name, cv::Mat &camera_matrix, cv::Mat &distortion_coefficients);
 
 /**
  * Read the corresponding .obj file based on the @param{file_path}, add the vertices and faces into the vectors
@@ -61,17 +61,36 @@ void read_obj(const std::string &file_path,
               float x_shift,
               float y_shift);
 
+/**
+ * Draw the axes on the origin point of the chessboard
+ * @param rvec rotation vector
+ * @param tvec translation vector
+ * @param camera_matrix camera matrix contains focal lengths and optical centers
+ * @param distortion_coefficients distortion coefficients
+ * @param frame the current frame
+ * @param origin origin point of the chessboard in the image
+ */
 void draw_axes(const cv::Mat &rvec,
                const cv::Mat &tvec,
                const cv::Mat &camera_matrix,
-               const cv::Mat &distance_coefficients,
+               const cv::Mat &distortion_coefficients,
                cv::Mat &frame,
                cv::Point2f origin);
 
+/**
+ * Draw the 3D object on the chessboard
+ * @param rvec rotation vector
+ * @param tvec translation vector
+ * @param camera_matrix camera matrix contains focal lengths and optical centers
+ * @param distortion_coefficients distortion coefficients
+ * @param vertices vertices defined in the obj files
+ * @param faces faces represented by multiple vertices index
+ * @param frame the current frame
+ */
 void draw_object(const cv::Mat &rvec,
                  const cv::Mat &tvec,
                  const cv::Mat &camera_matrix,
-                 const cv::Mat &distance_coefficients,
+                 const cv::Mat &distortion_coefficients,
                  const std::vector<cv::Point3f> &vertices,
                  std::vector<std::vector<int>> &faces,
                  cv::Mat &frame

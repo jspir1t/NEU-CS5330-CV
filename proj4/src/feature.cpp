@@ -1,6 +1,14 @@
 #include <iostream>
 #include "utils.h"
+
+enum mode{
+  HARRIS = 1,
+  SIFT = 2,
+};
+
 int main(int argc, char *argv[]) {
+  mode m = HARRIS;
+
   cv::VideoCapture *capdev;
   // open the video device
   capdev = new cv::VideoCapture(0);
@@ -27,19 +35,31 @@ int main(int argc, char *argv[]) {
 
     cv::cvtColor(frame, grey_scale, cv::COLOR_BGR2GRAY);
 
-    int blockSize = 5;
-    int apertureSize = 3;
-    double k = 0.04;
-    cornerHarris(grey_scale, dst, blockSize, apertureSize, k);
-    normalize(dst, dst_norm, 0, 255, cv::NORM_MINMAX, CV_32FC1, cv::Mat());
-    convertScaleAbs(dst_norm, dst_norm_scaled);
-    for (int i = 0; i < dst_norm.rows; i++) {
-      for (int j = 0; j < dst_norm.cols; j++) {
-        if ((int) dst_norm.at<float>(i, j) > 100) {
-          circle(frame, cv::Point(j, i), 1, cv::Scalar(0, 0, 255), 1, 8, 0);
+    if (m == HARRIS) {
+      int blockSize = 5;
+      int apertureSize = 3;
+      double k = 0.04;
+      cornerHarris(grey_scale, dst, blockSize, apertureSize, k);
+      normalize(dst, dst_norm, 0, 255, cv::NORM_MINMAX, CV_32FC1, cv::Mat());
+      convertScaleAbs(dst_norm, dst_norm_scaled);
+      for (int i = 0; i < dst_norm.rows; i++) {
+        for (int j = 0; j < dst_norm.cols; j++) {
+          if ((int) dst_norm.at<float>(i, j) > 100) {
+            circle(frame, cv::Point(j, i), 1, cv::Scalar(0, 0, 255), 1, 8, 0);
+          }
         }
       }
+    } else {
+      cv::Ptr<cv::SiftFeatureDetector> detector = cv::SiftFeatureDetector::create();
+      std::vector<cv::KeyPoint> key_points;
+      detector->detect(grey_scale, key_points);
+
+      cv::Mat output;
+      cv::drawKeypoints(grey_scale, key_points, output, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+      output.copyTo(frame);
     }
+
+
 
     // see if there is a waiting keystroke
     int key = cv::waitKey(10);
@@ -48,7 +68,15 @@ int main(int argc, char *argv[]) {
       break;
     }
     if (key == 's') {
-      cv::imwrite("../harris_screenshot.jpg", frame);
+      cv::imwrite("../corners.jpg", frame);
+    }
+    // if user types 'h', show the harris corners
+    else if (key == 'h') {
+      m = HARRIS;
+    }
+      // if user types 'f', show the sift corners with orientations
+    else if (key == 'f') {
+      m = SIFT;
     }
 
     imshow("Video", frame);

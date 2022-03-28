@@ -2,9 +2,9 @@
 #include "utils.h"
 
 int main(int argc, char *argv[]) {
-  if (argc != 3) {
-    std::cout << "Usage: ./main.exe <camera_index> <target>" << std::endl;
-    std::cout << "<camera_index> could be any integer, <target> should be chessboard or circlesgrid" << std::endl;
+  if (argc != 2) {
+    std::cout << "Usage: ./main.exe <target>" << std::endl;
+    std::cout << "<target> should be chessboard or circlesgrid" << std::endl;
     exit(-1);
   }
 
@@ -16,7 +16,6 @@ int main(int argc, char *argv[]) {
   // Initialize the simple blob detector with the parameters above for the findCirclesGrid() function to find the circle grids
   cv::Ptr<cv::SimpleBlobDetector> detector = cv::SimpleBlobDetector::create(params);
 
-  std::string camera_index = argv[1];
   std::vector<cv::Point2f> corner_set;
   std::vector<cv::Vec3f> point_set;
   std::vector<std::vector<cv::Vec3f> > point_list;
@@ -24,14 +23,14 @@ int main(int argc, char *argv[]) {
 
   cv::TermCriteria termcrit(cv::TermCriteria::COUNT | cv::TermCriteria::EPS, 20, 0.03);
   cv::Mat camera_matrix = cv::Mat::eye(3, 3, CV_64FC1);
-  cv::Mat distance_coefficients;
+  cv::Mat distortion_coefficients;
 
   int points_per_row, points_per_column;
-  std::string target = std::string(argv[2]);
+  std::string target = std::string(argv[1]);
   if (target == "chessboard") {
     points_per_row = 9;
     points_per_column = 6;
-  } else if (target == "circlesgrid"){
+  } else if (target == "circlesgrid") {
     points_per_row = 4;
     points_per_column = 11;
   } else {
@@ -113,7 +112,7 @@ int main(int argc, char *argv[]) {
           for (int i = 0; i < points_per_column; i++) {
             int j = (i % 2) == 0 ? 0 : 1;
             for (; j < points_per_row * 2; j = j + 2) {
-              point_set.push_back(cv::Point3f((float)j, (float)(-i), 0.f));
+              point_set.push_back(cv::Point3f((float) j, (float) (-i), 0.f));
             }
           }
         }
@@ -127,7 +126,7 @@ int main(int argc, char *argv[]) {
         cv::imwrite("../img/" + target + "/screenshot_" + std::to_string(count++) + ".jpg", frame);
       }
     } else if (key == 'c') {
-      // if user types 'c' and there are enough frames to be calibrated. Do the calibration to calculate the intrinsic matrix and distance matrix
+      // if user types 'c' and there are enough frames to be calibrated. Do the calibration to calculate the intrinsic matrix and distortion matrix
       if (point_list.size() >= 5) {
         std::cout << delimiter << std::endl;
         std::cout << std::to_string(point_list.size()) + " frame collected, running a calibration:" << std::endl;
@@ -138,22 +137,22 @@ int main(int argc, char *argv[]) {
                                                          corner_list,
                                                          frame.size(),
                                                          camera_matrix,
-                                                         distance_coefficients,
+                                                         distortion_coefficients,
                                                          rvecs,
                                                          tvecs,
                                                          cv::CALIB_FIX_ASPECT_RATIO,
                                                          termcrit);
 
         print_matrix("camera_matrix: ", camera_matrix);
-        print_matrix("distance_coefficients:", distance_coefficients);
+        print_matrix("distortion_coefficients:", distortion_coefficients);
         std::cout << "re-projection error: " << re_projection_error << std::endl;
-        std::cout << "save camera matrix and distance coefficients to csv file." << std::endl;
+        std::cout << "save camera matrix and distortion coefficients to csv file." << std::endl;
         std::cout << delimiter << std::endl;
 
         // write to file
-        write_intrinsic_paras("camera_intrinsic_paras_camera_" + camera_index + "_" + target + ".csv",
+        write_intrinsic_paras("camera_intrinsic_paras_" + target + ".csv",
                               camera_matrix,
-                              distance_coefficients);
+                              distortion_coefficients);
       } else {
         std::cout << "calibration frames not enough: require 5, current " + std::to_string(point_list.size())
                   << std::endl;
