@@ -121,7 +121,7 @@ def test_greek(network, embedding, categories):
     """
     Read these images from the test_greek folder as test dataset, preprocess them and feed into the network to get
     the embeddings, calculate the distances between each test image and the whole training data's embedding,
-    make the one with smallest distance as the prediction.
+    make the one with the smallest distance as the prediction.
     :param network: trained truncated network
     :param embedding: the training dataset embeddings
     :param categories: the training dataset categories
