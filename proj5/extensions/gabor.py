@@ -104,7 +104,7 @@ def main(argv):
     # make the prediction on the first image in the test dataset
     output = network(images[0:1])
     prediction = output.data.max(1, keepdim=True)[1].item()
-    print(prediction)
+    print(f'prediction for the first test image: {prediction}')
 
     test_dataset_acc(network)
 
