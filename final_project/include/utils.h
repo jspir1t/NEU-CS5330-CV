@@ -1,3 +1,6 @@
+/**
+ * Header file of the utils file, define the function signatures.
+ */
 #include <opencv2/opencv.hpp>
 #include <iostream>
 

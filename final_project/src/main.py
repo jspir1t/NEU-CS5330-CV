@@ -1,3 +1,6 @@
+"""
+Python file consists of the implementation of OpenCV method and WeChat method.
+"""
 import cv2 as cv
 import os
 import sys

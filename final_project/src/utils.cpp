@@ -1,3 +1,6 @@
+/**
+ * utils file consists of the detail implementation of the QR code detection and the CSV file writer.
+ */
 #include "utils.h"
 #include <fstream>
 using namespace std;

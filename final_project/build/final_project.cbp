@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="final_project"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;CMake Files\..\;CMake Files\..\..\;CMake Files\..\..\..\;CMake Files\..\..\..\..\;CMake Files\..\..\..\..\..\;CMake Files\..\..\..\..\..\..\;CMake Files\..\..\..\..\..\..\Tools\;CMake Files\..\..\..\..\..\..\Tools\opencv\;CMake Files\..\..\..\..\..\..\Tools\opencv\mingw-build\;CMake Files\..\..\..\..\..\..\Tools\opencv\mingw-build\install\;CMake Files\..\..\..\..\..\..\Tools\opencv\mingw-build\install\x64\;CMake Files\..\..\..\..\..\..\Tools\opencv\mingw-build\install\x64\mingw\;CMake Files\..\..\..\..\..\..\Tools\opencv\mingw-build\install\x64\mingw\lib\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="C:/Users/stard/Documents/Workspace/CS5330/final_project/build"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="C:/Tools/mingw/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/stard/Documents/Workspace/CS5330/final_project/build/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="C:/Tools/mingw/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/stard/Documents/Workspace/CS5330/final_project/build/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="C:/Tools/mingw/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/stard/Documents/Workspace/CS5330/final_project/build/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="C:/Tools/mingw/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/stard/Documents/Workspace/CS5330/final_project/build/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="C:/Users/stard/Documents/Workspace/CS5330/final_project/build"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="C:/Tools/mingw/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/stard/Documents/Workspace/CS5330/final_project/build/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="C:/Tools/mingw/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/stard/Documents/Workspace/CS5330/final_project/build/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="C:/Tools/mingw/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/stard/Documents/Workspace/CS5330/final_project/build/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="C:/Tools/mingw/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/stard/Documents/Workspace/CS5330/final_project/build/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="main">
+				<Option output="C:/Users/stard/Documents/Workspace/CS5330/final_project/build/main.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="C:/Users/stard/Documents/Workspace/CS5330/final_project/build"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="C:/Users/stard/Documents/Workspace/CS5330/final_project/include"/>
+					<Add directory="C:/Tools/opencv/mingw-build/install/include"/>
+					<Add directory="C:/Tools/mingw/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++"/>
+					<Add directory="C:/Tools/mingw/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="C:/Tools/mingw/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward"/>
+					<Add directory="C:/Tools/mingw/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include"/>
+					<Add directory="C:/Tools/mingw/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed"/>
+					<Add directory="C:/Tools/mingw/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="C:/Tools/mingw/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/stard/Documents/Workspace/CS5330/final_project/build/Makefile&quot;  VERBOSE=1 main"/>
+					<CompileFile command="C:/Tools/mingw/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/stard/Documents/Workspace/CS5330/final_project/build/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="C:/Tools/mingw/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/stard/Documents/Workspace/CS5330/final_project/build/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="C:/Tools/mingw/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/stard/Documents/Workspace/CS5330/final_project/build/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="main/fast">
+				<Option output="C:/Users/stard/Documents/Workspace/CS5330/final_project/build/main.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="C:/Users/stard/Documents/Workspace/CS5330/final_project/build"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="C:/Users/stard/Documents/Workspace/CS5330/final_project/include"/>
+					<Add directory="C:/Tools/opencv/mingw-build/install/include"/>
+					<Add directory="C:/Tools/mingw/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++"/>
+					<Add directory="C:/Tools/mingw/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="C:/Tools/mingw/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward"/>
+					<Add directory="C:/Tools/mingw/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include"/>
+					<Add directory="C:/Tools/mingw/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed"/>
+					<Add directory="C:/Tools/mingw/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="C:/Tools/mingw/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/stard/Documents/Workspace/CS5330/final_project/build/Makefile&quot;  VERBOSE=1 main/fast"/>
+					<CompileFile command="C:/Tools/mingw/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/stard/Documents/Workspace/CS5330/final_project/build/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="C:/Tools/mingw/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/stard/Documents/Workspace/CS5330/final_project/build/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="C:/Tools/mingw/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/stard/Documents/Workspace/CS5330/final_project/build/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="C:/Users/stard/Documents/Workspace/CS5330/final_project/build"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="C:/Tools/mingw/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/stard/Documents/Workspace/CS5330/final_project/build/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="C:/Tools/mingw/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/stard/Documents/Workspace/CS5330/final_project/build/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="C:/Tools/mingw/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/stard/Documents/Workspace/CS5330/final_project/build/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="C:/Tools/mingw/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/stard/Documents/Workspace/CS5330/final_project/build/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="C:/Users/stard/Documents/Workspace/CS5330/final_project/src/main.cpp">
+			<Option target="main"/>
+		</Unit>
+		<Unit filename="C:/Users/stard/Documents/Workspace/CS5330/final_project/src/utils.cpp">
+			<Option target="main"/>
+		</Unit>
+		<Unit filename="C:/Users/stard/Documents/Workspace/CS5330/final_project/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="C:/Users/stard/Documents/Workspace/CS5330/final_project/../../../../../../Tools/opencv/mingw-build/install/OpenCVConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\Tools\opencv\mingw-build\install\"/>
+		</Unit>
+		<Unit filename="C:/Users/stard/Documents/Workspace/CS5330/final_project/../../../../../../Tools/opencv/mingw-build/install/OpenCVConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\Tools\opencv\mingw-build\install\"/>
+		</Unit>
+		<Unit filename="C:/Users/stard/Documents/Workspace/CS5330/final_project/../../../../../../Tools/opencv/mingw-build/install/x64/mingw/lib/OpenCVConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\Tools\opencv\mingw-build\install\x64\mingw\lib\"/>
+		</Unit>
+		<Unit filename="C:/Users/stard/Documents/Workspace/CS5330/final_project/../../../../../../Tools/opencv/mingw-build/install/x64/mingw/lib/OpenCVModules-release.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\Tools\opencv\mingw-build\install\x64\mingw\lib\"/>
+		</Unit>
+		<Unit filename="C:/Users/stard/Documents/Workspace/CS5330/final_project/../../../../../../Tools/opencv/mingw-build/install/x64/mingw/lib/OpenCVModules.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\Tools\opencv\mingw-build\install\x64\mingw\lib\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>
