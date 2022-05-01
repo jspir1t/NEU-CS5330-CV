@@ -1,6 +1,6 @@
 #include "classifier.h"
 
-void clear_file(std::string file_name) {
+void clearFile(std::__cxx11::basic_string<char> file_name) {
   std::ofstream f(file_name, std::ofstream::out | std::ofstream::trunc);
   if (f.good()) {
     f.open(file_name, std::ofstream::out | std::ofstream::trunc);

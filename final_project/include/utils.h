@@ -4,12 +4,29 @@
 #ifndef FINAL_PROJECT_INCLUDE_UTILS_H_
 #define FINAL_PROJECT_INCLUDE_UTILS_H_
 using namespace cv;
+using namespace std;
 
 /**
- * Given an image, detect the qrcode and segment it with bounding box
- * @param image the captured image
+ * Write the evaluation result into a csv file.
+ * @param map the evaluation result where key is the file name and value is 1 for successfully detected, 0 for failure
  */
-void detectAndSegmentQRCode(Mat &image);
+void writeToCSV(const map<String, bool>& map);
+
+/**
+ * Given an image, detect the qr code and return a vector of points of the three position boxes. If not detected, return
+ * an empty vector.
+ * @param image the original image
+ * @param showWin show the binary image window if true
+ * @return a vector of points of the three position boxes
+ */
+vector<Point> detectAndDecode(Mat &image, bool showWin);
+
+/**
+ * Draw the bing bounding boxes onto the image based on the position boxes vertices
+ * @param image the original image
+ * @param pts a vector of points of the three position boxes
+ */
+void drawBBox(Mat &image, vector<Point> &pts);
 
 /**
  * Check if a region of interest meet the requirement that the width ratio of those black and white areas is 1:1:3:1:1

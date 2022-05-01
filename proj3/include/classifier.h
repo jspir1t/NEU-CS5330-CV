@@ -25,7 +25,7 @@ bool is_empty(std::fstream &db_file, std::string file_name);
  * clear the content in the @param file_name
  * @param file_name the name of the file to be cleared
  */
-void clear_file(std::string file_name);
+void clearFile(std::string file_name);
 /**
  * Write features to the @param file_name, each row should be a @param feature_name along with a @param features
  * @param db_file the fstream

@@ -1,18 +1,59 @@
 #include "utils.h"
-
+#include <fstream>
 using namespace std;
 
-void detectAndSegmentQRCode(Mat &image) {
+void writeToCSV(const map<String, bool> &map) {
+  String csvFile = "../results/self.csv";
+  // clear content if exists
+  std::ofstream f(csvFile, ofstream::out | ofstream::trunc);
+  if (f.good()) {
+    f.open(csvFile, ofstream::out | ofstream::trunc);
+  }
+  f.close();
+
+  fstream csv;
+  csv.open(csvFile, std::ios_base::app);
+  // write the header into csv file
+  csv << "algorithm" << ",";
+  for (const auto &elem: map) {
+    csv << elem.first.substr(0, elem.first.size() - 4) << ",";
+  }
+  csv << "\n";
+  // write the corresponding values into csv file
+  csv << "self" << ",";
+  for (const auto &elem: map) {
+    csv << elem.second << ",";
+  }
+  csv.close();
+}
+
+
+void drawBBox(Mat &image, vector<Point> &pts) {
+  // find the outer rectangle that covers all those boxes vertices collected above
+  RotatedRect rrt = minAreaRect(pts);
+  Point2f vertices[4];
+  // copy the four points into vertices array
+  rrt.points(vertices);
+  // draw the bounding box based on the the four vertices
+  for (int i = 0; i < 4; i++) {
+    line(image, vertices[i], vertices[(i + 1) % 4], Scalar(0, 255, 0), 2);
+  }
+}
+
+vector<Point> detectAndDecode(Mat &image, bool showWin) {
   Mat gray, binary;
   Mat allContours = image.clone();
   cvtColor(image, gray, COLOR_BGR2GRAY);
   threshold(gray, binary, 0, 255, THRESH_BINARY | THRESH_OTSU);
-  imshow("binary", binary);
+  // in evaluation mode, the showWin should be false to avoid displaying many windows
+  if (showWin) {
+    imshow("binary", binary);
+  }
 
-  // detect rectangle now
+  // detect contours
   vector<vector<Point>> contours;
-  vector<Vec4i> hireachy;
-  findContours(binary.clone(), contours, hireachy, RETR_LIST, CHAIN_APPROX_SIMPLE, Point());
+  vector<Vec4i> hierarchy;
+  findContours(binary.clone(), contours, hierarchy, RETR_LIST, CHAIN_APPROX_SIMPLE, Point());
 
   Mat binaryPositionBoxesMat = Mat::zeros(image.size(), CV_8UC1);
   int positionBoxCnt = 0;
@@ -27,10 +68,10 @@ void detectAndSegmentQRCode(Mat &image) {
     float height = rect.size.height;
     float rate = min(width, height) / max(width, height);
     // if the rotated rectangle has rate bigger than a threshold and small enough(smaller than quarter of the cols and rows)
-    if (rate > 0.7 && width < image.cols / 4 && height < image.rows / 4) {
+    if (rate > 0.7 && width < image.cols / 3 && height < image.rows / 3) {
       drawContours(allContours, contours, static_cast<int>(t), Scalar(255, 0, 0), 2, 8);
       Mat roi = perspectiveTransform(image, rect);
-      // for each region of interest, check if it met the feature of a postion box in QR code
+      // for each region of interest, check if it met the feature of a position box in QR code
       if (xAxisFeature(roi) && yAxisFeature(roi)) {
         positionBoxCnt++;
         printf("%dth contour is a position box!\n", t);
@@ -40,55 +81,23 @@ void detectAndSegmentQRCode(Mat &image) {
       }
     }
   }
-  // This is helpful for debugging, it will show whether the position boxes is detected succesfully or not
-//  imwrite("../images/all_contours.png", allContours);
 
+  vector<Point> pts;
+  // if there are less than 3 position boxes recognized, simply return
   if (positionBoxCnt != 3) {
     cout << "Position Box Found: " << positionBoxCnt << ". Detection Failed!" << endl;
-    return;
-  }
-//  imwrite("../images/position_boxes.png", image);
-
-  // scan all key points of the three boxes
-  vector<Point> pts;
-  for (int row = 0; row < binaryPositionBoxesMat.rows; row++) {
-    for (int col = 0; col < binaryPositionBoxesMat.cols; col++) {
-      int pv = binaryPositionBoxesMat.at<uchar>(row, col);
-      if (pv == 255) {
-        pts.push_back(Point(col, row));
+  } else {
+    // scan and save all key points of the three boxes into a vector and return
+    for (int row = 0; row < binaryPositionBoxesMat.rows; row++) {
+      for (int col = 0; col < binaryPositionBoxesMat.cols; col++) {
+        int pv = binaryPositionBoxesMat.at<uchar>(row, col);
+        if (pv == 255) {
+          pts.push_back(Point(col, row));
+        }
       }
     }
   }
-  // find the outer rectangle that covers all those boxes vertices collected above
-  RotatedRect rrt = minAreaRect(pts);
-  Point2f vertices[4];
-  rrt.points(vertices);
-  pts.clear();
-  for (int i = 0; i < 4; i++) {
-    line(image, vertices[i], vertices[(i + 1) % 4], Scalar(0, 255, 0), 2);
-    pts.push_back(vertices[i]);
-  }
-
-//  // draw the mask on the recognized rectangle
-//  Mat mask = Mat::zeros(binaryPositionBoxesMat.size(), binaryPositionBoxesMat.type());
-//  vector<vector<Point>> cpts;
-//  cpts.push_back(pts);
-//  drawContours(mask, cpts, 0, Scalar(255), -1, 8);
-//
-//  Mat dst;
-//  bitwise_and(image, image, dst, mask);
-
-  imshow("image", image);
-//  imwrite("../images/image.png", image);
-
-//  imshow("binary position boxes", binaryPositionBoxesMat);
-//  imwrite("../images/binary_position_boxes.png", binaryPositionBoxesMat);
-
-//  imshow("result-mask", mask);
-//  imwrite("../images/mask.png", mask);
-
-//  imshow("qrcode-only", dst);
-//  imwrite("../images/qrcode_only.png", dst);
+  return pts;
 }
 
 bool xAxisFeature(Mat &qr_roi) {
@@ -197,7 +206,7 @@ bool xAxisFeature(Mat &qr_roi) {
 
   if ((innerBoxSideLength == 3 || innerBoxSideLength == 4) && leftBlackWidth == rightBlackWidth
       && leftWhiteWidth == rightWhiteWidth && leftWhiteWidth == leftBlackWidth && leftBlackWidth == 1) { // 1:1:3:1:1
-    imwrite("../images/binary_ROI.png", binary);
+    imwrite("../results/binary_ROI.png", binary);
     return true;
   } else {
     return false;
