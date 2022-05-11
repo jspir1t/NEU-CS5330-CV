@@ -1,8 +1,13 @@
 /**
- * Main CPP file, contains a main function in which it will read the command line parameters to determine the mode. If
- * it is video mode, display a video window and draw the bounding box once a QR code is detected. If it is single image
- * mode, display a static window to show the result. If it is evaluation mode, it will go over the whole dataset to
- * detect the QR code and write the results into results folder.
+ * CS5330 - Computer Vision - Bruce Maxwell
+ * Date - 2022.5.4
+ * Final Project - A More Robust Model For QR Code Detection
+ * Names - Jingtong Zhang, Yuqin Luo, Ying Bi
+ *
+ * Description: Main CPP file, contains a main function in which it will read the command line parameters to determine
+ * the mode. If it is video mode, display a video window and draw the bounding box once a QR code is detected. If it is
+ * single image mode, display a static window to show the result. If it is evaluation mode, it will go over the whole
+ * dataset to detect the QR code and write the results into results folder.
  */
 #include "utils.h"
 #include <dirent.h>

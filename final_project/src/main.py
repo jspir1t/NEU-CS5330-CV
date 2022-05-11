@@ -1,5 +1,11 @@
 """
-Python file consists of the implementation of OpenCV method and WeChat method.
+CS5330 - Computer Vision - Bruce Maxwell
+Date - 2022.5.4
+Final Project - A More Robust Model For QR Code Detection
+Names - Jingtong Zhang, Yuqin Luo, Ying Bi
+
+Python file consists of the implementation of OpenCV method and WeChat method. The WeChat method requires the config
+files in the config directory.
 """
 import cv2 as cv
 import os

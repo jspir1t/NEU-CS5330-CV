@@ -1,5 +1,10 @@
 /**
- * Header file of the utils file, define the function signatures.
+ * CS5330 - Computer Vision - Bruce Maxwell
+ * Date - 2022.5.4
+ * Final Project - A More Robust Model For QR Code Detection
+ * Names - Jingtong Zhang, Yuqin Luo, Ying Bi
+ *
+ * Description: Header file of the utils file, defining the signatures of the these utils functions.
  */
 #include <opencv2/opencv.hpp>
 #include <iostream>

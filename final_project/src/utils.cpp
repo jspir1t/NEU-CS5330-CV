@@ -1,5 +1,10 @@
 /**
- * utils file consists of the detail implementation of the QR code detection and the CSV file writer.
+ * CS5330 - Computer Vision - Bruce Maxwell
+ * Date - 2022.5.4
+ * Final Project - A More Robust Model For QR Code Detection
+ * Names - Jingtong Zhang, Yuqin Luo, Ying Bi
+ *
+ * Description: Utils file consists of the detail implementation of the QR code detection, CSV file writer and Bbox draw
  */
 #include "utils.h"
 #include <fstream>
